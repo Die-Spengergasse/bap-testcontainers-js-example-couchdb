@@ -1,38 +1,34 @@
 import { GenericContainer } from "testcontainers";
 
-import fetch from "node-fetch";
+import example from "../lib/example.js";
 
 import assert from "assert";
 
-const COUCHDB_USER = "admin";
-const COUCHDB_PASSWORD = "secret";
-
 describe("Example with CouchDB", () => {
   let container;
+  let db;
 
   before(async function () {
+    const COUCHDB_USER = "admin";
+    const COUCHDB_PASSWORD = "secret";
+
     this.timeout(60 * 60 * 1000); // 1 hour
     container = await new GenericContainer("couchdb:3.2.2")
       .withEnvironment({ COUCHDB_USER, COUCHDB_PASSWORD })
       .withExposedPorts(5984)
       .start();
+
+    const host = container.getHost();
+    const port = container.getMappedPort(5984);
+
+    db = example(`http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@${host}:${port}`);
   });
 
   after(async () => {
     await container.stop();
   });
 
-  function baseUrl() {
-    const host = container.getHost();
-    const port = container.getMappedPort(5984);
-
-    return `http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@${host}:${port}`;
-  }
-
-  it("works", async () => {
-    const r = await fetch(baseUrl());
-    const j = await r.json();
-
-    assert.equal(j.version, "3.2.2");
+  it("Should report the correct version", async () => {
+    assert.equal(await db.version(), "3.2.2");
   });
 });
