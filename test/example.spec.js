@@ -4,16 +4,16 @@ import fetch from "node-fetch";
 
 import assert from "assert";
 
+const COUCHDB_USER = "admin";
+const COUCHDB_PASSWORD = "secret";
+
 describe("Example with CouchDB", () => {
   let container;
 
   before(async function () {
     this.timeout(60 * 60 * 1000); // 1 hour
     container = await new GenericContainer("couchdb:3.2.2")
-      .withEnvironment({
-        COUCHDB_USER: "admin",
-        COUCHDB_PASSWORD: "password",
-      })
+      .withEnvironment({ COUCHDB_USER, COUCHDB_PASSWORD })
       .withExposedPorts(5984)
       .start();
   });
@@ -22,13 +22,16 @@ describe("Example with CouchDB", () => {
     await container.stop();
   });
 
-  it("works", async () => {
+  function baseUrl() {
     const host = container.getHost();
     const port = container.getMappedPort(5984);
-    const r = await fetch(`http://admin:password@${host}:${port}`);
-    const j = await r.json();
 
-    console.log(j);
+    return `http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@${host}:${port}`;
+  }
+
+  it("works", async () => {
+    const r = await fetch(baseUrl());
+    const j = await r.json();
 
     assert.equal(j.version, "3.2.2");
   });
