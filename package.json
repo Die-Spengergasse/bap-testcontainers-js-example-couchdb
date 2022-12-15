@@ -1,0 +1,10 @@
+{
+  "name": "test-containers-example",
+  "packageManager": "yarn@3.3.0",
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "node-fetch": "2.6.6",
+    "testcontainers": "^9.1.0"
+  },
+  "type": "module"
+}
